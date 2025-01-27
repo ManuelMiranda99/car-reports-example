@@ -9,6 +9,8 @@ import {
   Patch,
   Post,
   Query,
+  Session,
+  UseGuards,
 } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UsersService } from './users.service';
@@ -16,6 +18,9 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { UserDto } from './dto/user.dto';
 import { Serialize } from '../interceptors/serialize.interceptor';
 import { AuthService } from './auth.service';
+import { User } from './user.entity';
+import { CurrentUser } from './decorators/current-user.decorator';
+import { AuthGuard } from '../guards/auth.guard';
 
 @Controller('auth')
 @Serialize(UserDto)
@@ -25,14 +30,33 @@ export class UsersController {
     private authService: AuthService,
   ) {}
 
+  @UseGuards(AuthGuard)
+  @Get('whoami')
+  whoAmI(@CurrentUser() user: User) {
+    return user;
+  }
+
+  @Post('signout')
+  signOut(@Session() session: any) {
+    session.userId = null;
+  }
+
   @Post('signup')
-  signup(@Body() body: CreateUserDto) {
-    return this.authService.signup(body.email, body.password);
+  async signup(@Body() body: CreateUserDto, @Session() session: any) {
+    const user = await this.authService.signup(body.email, body.password);
+
+    session.userId = user.id;
+
+    return user;
   }
 
   @Post('signin')
-  signin(@Body() body: CreateUserDto) {
-    return this.authService.signin(body.email, body.password);
+  async signin(@Body() body: CreateUserDto, @Session() session: any) {
+    const user = await this.authService.signin(body.email, body.password);
+
+    session.userId = user.id;
+
+    return user;
   }
 
   @Get(':id')
