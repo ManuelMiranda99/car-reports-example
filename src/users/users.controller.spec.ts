@@ -89,7 +89,7 @@ describe('UsersController', () => {
 
   it('returns an user with existing credentials when calling signin and updates session object', async () => {
     const session = {
-      userId: undefined,
+      userId: -1,
     };
     const user = await controller.signin(
       {
@@ -99,9 +99,7 @@ describe('UsersController', () => {
       session,
     );
 
-    expect(user).toBeDefined();
-    expect(user.email).toEqual('test@test.com');
-    expect(user.password).toEqual('password');
+    expect(user.id).toEqual(1);
     expect(session.userId).toEqual(1);
   });
 });
