@@ -1,6 +1,7 @@
 import { MiddlewareConsumer, Module, ValidationPipe } from '@nestjs/common';
 import { APP_PIPE } from '@nestjs/core';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { UsersModule } from './users/users.module';
@@ -12,8 +13,14 @@ const cookieSession = require('cookie-session');
 
 @Module({
   imports: [
+    ConfigModule.forRoot({
+      isGlobal: true,
+      envFilePath: `.env.${process.env.NODE_ENV}`,
+    }),
     TypeOrmModule.forRoot({
       type: 'sqlite',
+      // NOTE: WE CAN USE THIS LINE, BUT THIS IS NOT THE NEST RECOMMENDED WAY.
+      // database: process.env.NODE_ENV === 'test' ? 'test.sqlite' : 'db.sqlite',
       database: 'db.sqlite',
       entities: [User, Report],
       synchronize: true,
